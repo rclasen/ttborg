@@ -61,10 +61,11 @@ my $ttb = TtbOrg->new({
 	pass	=> $pass,
 });
 
+my $uploaded;
 foreach my $f ( @ARGV ){
 	my $type = ($f =~ /\.([^.]+)$/)[0];
 
-	if( $delay > 0 ){
+	if( $uploaded && $delay > 0 ){
 		print "delaying next upload ($delay)\n";
 		sleep( $delay );
 	}
@@ -76,6 +77,8 @@ foreach my $f ( @ARGV ){
 	if( defined $sport ){
 		#my $ret = $ttb->workout_set( $id, [ 'sport-id' => $sport ] );
 	}
+
+	$uploaded++;
 }
 
 #print Dumper($r);
