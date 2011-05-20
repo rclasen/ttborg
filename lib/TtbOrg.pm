@@ -35,10 +35,16 @@ sub request {
 		last;
 	}
 
-	my $res = $self->{ua}->post( $ttborg_url . $path, $param, @arg );
+	my $req = $ttborg_url . $path;
+	#print STDERR "request post : $req, param=@$param, @arg";
+
+	my $res = $self->{ua}->post( $req, $param, @arg );
 
 	$res->is_success
 		or croak "request failed: ". $res->status_line;
+
+	#print STDERR "response status: ", $res->status_line;
+	#print STDERR "response content: ", $res->content;
 
 	XMLin( $res->content );
 }
@@ -131,10 +137,10 @@ sub workout_set {
 }
 
 sub file_upload {
-	my( $self, $file, $ftype ) = @_;
+	my( $self, $file ) = @_;
 
 	my $res = $self->srequest( '/file/upload', [
-		upload_submit	=> $ftype,
+		upload_submit	=> 'hrm',
 		file		=> [$file],
 	]);
 

@@ -1,3 +1,9 @@
+ttborg (0.02~git0) unstable; urgency=low
+
+  * don't specify filetype on upload to fix FIT upload
+
+ -- Rainer Clasen <bj@schlepp.mich.zuto.de>  Fri, 20 May 2011 14:57:02 +0200
+
 ttborg (0.01) unstable; urgency=low
 
   * initial release
