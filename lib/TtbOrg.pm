@@ -22,6 +22,8 @@ sub new {
 		ua	=> LWP::UserAgent->new(
 			conn_cache	=> LWP::ConnCache->new,
 		),
+		session	=> undef,
+		pro	=> 0,
 	}, ref $proto || $proto;
 }
 
@@ -74,26 +76,44 @@ sub srequest {
 	])
 }
 
-sub login {
+sub new_session {
 	my( $self ) = @_;
 
-	$self->debug( "logging in..." );
+	$self->debug( "requesting new SSO session..." );
 	my $res = $self->request( '/login/sso', [
 		user	=> $self->{user},
 		pass	=> $self->{pass},
 	]);
 
 	$res->{session}
-		or croak "login failed, got no session-ID";
+		or croak "SSO failed, got no session-ID";
 
-	$self->debug( "logged in with session ". $res->{session} );
-	$self->{session} = $res->{session};
+	$self->debug( "got new SSO session ". $res->{session} );
+
+	$res->{session};
+}
+
+sub get_session {
+	my( $self ) = @_;
+
+	$self->debug( "checking for SSO session..." );
+	my $res = $self->request( '/settings/list', [
+		user	=> $self->{user},
+		pass	=> $self->{pass},
+	]);
+
+	$self->debug( "got pro=". ($res->{pro}||'-')
+		.", session=".  ($res->{session}||'-') );
+	$self->{pro} = $res->{pro};
+
+	$res->{session};
 }
 
 sub session {
 	my( $self ) = @_;
 
-	$self->{session} or $self->login;
+	$self->{session} ||= $self->get_session
+		|| $self->new_session;
 }
 
 ############################################################
