@@ -47,7 +47,10 @@ sub request {
 	my $req = $ttborg_url . $path;
 	$self->{debug} && $self->debug( "request post : $req, param=@$param, @arg" );
 
-	my $res = $self->{ua}->post( $req, $param, @arg );
+	my $res = $self->{ua}->post( $req, [
+		@$param,
+		view	=> 'xml',
+	], @arg );
 
 	$res->is_success
 		or croak "request failed: ". $res->status_line;
@@ -66,7 +69,6 @@ sub srequest {
 
 	# TODO: allow %$param, too
 	$self->request( $path, [
-		view	=> 'xml',
 		sso	=> $self->session,
 		$param ? @$param : (),
 	])
