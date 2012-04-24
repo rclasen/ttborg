@@ -8,6 +8,7 @@ use Carp;
 use LWP::ConnCache;
 use LWP::UserAgent;
 use XML::Simple;
+use Data::Dumper;
 
 our $ttborg_url = 'http://trainingstagebuch.org';
 
@@ -15,11 +16,19 @@ sub new {
 	my( $proto, $arg ) = @_;
 
 	bless {
+		debug	=> 0,
+		debug_data => 0,
 		$arg ? %$arg : (),
 		ua	=> LWP::UserAgent->new(
 			conn_cache	=> LWP::ConnCache->new,
 		),
 	}, ref $proto || $proto;
+}
+
+sub debug {
+	my $self = shift;
+	return unless $self->{debug};
+	print STDERR "@_\n";
 }
 
 sub request {
@@ -36,17 +45,20 @@ sub request {
 	}
 
 	my $req = $ttborg_url . $path;
-	#print STDERR "request post : $req, param=@$param, @arg";
+	$self->{debug} && $self->debug( "request post : $req, param=@$param, @arg" );
 
 	my $res = $self->{ua}->post( $req, $param, @arg );
 
 	$res->is_success
 		or croak "request failed: ". $res->status_line;
 
-	#print STDERR "response status: ", $res->status_line;
-	#print STDERR "response content: ", $res->content;
+	$self->debug( "response status: ", $res->status_line );
+	$self->{debug_data} && $self->debug( "response content: ", $res->content );
 
-	XMLin( $res->content );
+	my $xml = XMLin( $res->content );
+	$self->{debug_data} && $self->debug( "response xml: ", Dumper( $xml ) );
+
+	$xml
 }
 
 sub srequest {
@@ -63,6 +75,7 @@ sub srequest {
 sub login {
 	my( $self ) = @_;
 
+	$self->debug( "logging in..." );
 	my $res = $self->request( '/login/sso', [
 		user	=> $self->{user},
 		pass	=> $self->{pass},
@@ -71,6 +84,7 @@ sub login {
 	$res->{session}
 		or croak "login failed, got no session-ID";
 
+	$self->debug( "logged in with session ". $res->{session} );
 	$self->{session} = $res->{session};
 }
 
@@ -144,6 +158,7 @@ sub file_upload {
 		file		=> [$file],
 	]);
 
+	$self->debug( "saved as workout ". $res->{id} );
 	$res->{id};
 }
 

@@ -6,17 +6,19 @@ use warnings;
 use strict;
 use TtbOrg;
 use Getopt::Long;
-use Data::Dumper;
+#use Data::Dumper;
 
 my $needhelp;
 my $wanthelp;
 
+my $debug;
 my $user;
 my $pass;
 my $delay = 120;
 my $sport;
 
 GetOptions(
+	"debug!"	=> \$debug,
 	"delay=i"	=> \$delay,
 	"help!"		=> \$wanthelp,
 	"pass=s"	=> \$pass,
@@ -28,6 +30,7 @@ if( $wanthelp ){
 	print "usage: $0 [options] <file1> ...
 upload files to trainingstagebuch.org
 options:
+ --debug         enable debug logging
  --delay=<sec>   delay between file uploads
  --help          this cruft
  --pass=<pwd>    ttb.org password
@@ -55,8 +58,8 @@ if( $needhelp ){
 	exit 1;
 }
 
-
 my $ttb = TtbOrg->new({
+	debug	=> $debug,
 	user	=> $user,
 	pass	=> $pass,
 });
