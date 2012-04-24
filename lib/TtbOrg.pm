@@ -36,23 +36,19 @@ sub debug {
 sub request {
 	my( $self, $path, $param ) = @_;
 
-	# TODO: allow %$param, too
-	my @arg;
-
-	# enable form based file upload:
-	foreach my $val ( @$param ){
-		next unless ref $val;
-		push @arg, Content_Type	=> 'form-data';
-		last;
-	}
-
-	my $req = $ttborg_url . $path;
-	$self->{debug} && $self->debug( "request post : $req, param=@$param, @arg" );
-
-	my $res = $self->{ua}->post( $req, [
+	my $uri = $ttborg_url . $path;
+	my @data = (
 		@$param,
-		view	=> 'xml',
-	], @arg );
+		view	=> 'xml'
+	);
+
+	$self->debug( "request uri: ". $uri );
+	$self->{debug_data} && $self->debug( "request data: ",
+		Data::Dumper->Dump([\@data], ['data'] ) );
+	my $res = $self->{ua}->post( $uri,
+		\@data,
+		Content_Type => 'form-data',
+	);
 
 	$res->is_success
 		or croak "request failed: ". $res->status_line;
