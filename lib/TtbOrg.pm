@@ -175,6 +175,19 @@ sub workout_set {
 sub file_upload {
 	my( $self, $file ) = @_;
 
+	$self->session;
+
+	my $limit = $self->{pro}
+		? 8 * 1024 * 1024
+		: 4 * 1024 * 1024;
+
+	my $size = (stat($file))[7]
+		or croak "no/empty file: $file";
+
+	$self->debug( "file size: $size, limit: $limit" );
+	$size < $limit
+		or croak "file too large, $size > $limit: $file";
+
 	my $res = $self->srequest( '/file/upload', [
 		upload_submit	=> 'hrm',
 		file		=> [$file],
