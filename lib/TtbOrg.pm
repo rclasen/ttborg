@@ -59,6 +59,12 @@ sub request {
 	my $xml = XMLin( $res->content );
 	$self->{debug_data} && $self->debug( "response xml: ", Dumper( $xml ) );
 
+	$xml
+		or croak "got invalid XML response";
+
+	$xml->{error}
+		&& croak "request failed: $xml->{error}";
+
 	$xml;
 }
 
