@@ -34,20 +34,19 @@ sub debug {
 }
 
 sub request {
-	my( $self, $path, $param ) = @_;
+	my( $self, $path, $query, $body ) = @_;
 
-	my $uri = $ttborg_url . $path;
-	my @data = (
-		@$param,
+	my $uri = URI->new( $ttborg_url . $path );
+	$uri->query_form(
+		@$query,
 		view	=> 'xml'
 	);
 
 	$self->debug( "request uri: ". $uri );
-	$self->{debug_data} && $self->debug( "request data: ",
-		Data::Dumper->Dump([\@data], ['data'] ) );
-	my $res = $self->{ua}->post( $uri,
-		\@data,
-		Content_Type => 'form-data',
+
+	my $res = $self->{ua}->post( $uri, ( $body
+		? ( $body, Content_Type => 'form-data' )
+		: () ),
 	);
 
 	$res->is_success
@@ -69,13 +68,13 @@ sub request {
 }
 
 sub srequest {
-	my( $self, $path, $param ) = @_;
+	my( $self, $path, $query, $body ) = @_;
 
 	# TODO: allow %$param, too
 	$self->request( $path, [
 		sso	=> $self->session,
-		$param ? @$param : (),
-	]);
+		$query ? @$query : (),
+	], $body );
 }
 
 sub new_session {
@@ -190,7 +189,7 @@ sub file_upload {
 	$size < $limit
 		or croak "file too large, $size > $limit: $file";
 
-	my $res = $self->srequest( '/file/upload', [
+	my $res = $self->srequest( '/file/upload', [], [
 		upload_submit	=> 'hrm',
 		file		=> [$file],
 	] );
