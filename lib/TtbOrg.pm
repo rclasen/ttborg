@@ -55,16 +55,16 @@ sub request {
 	$self->debug( "response status: ", $res->status_line );
 	$self->{debug_data} && $self->debug( "response content: ", $res->content );
 
-	my $xml = XMLin( $res->content );
-	$self->{debug_data} && $self->debug( "response xml: ", Dumper( $xml ) );
+	my $data = XMLin( $res->content );
+	$self->{debug_data} && $self->debug( "response data: ", Dumper( $data ) );
 
-	$xml
+	$data
 		or croak "got invalid XML response";
 
-	$xml->{error}
-		&& croak "request failed: $xml->{error}";
+	$data->{error}
+		&& croak "request failed: $data->{error}";
 
-	$xml;
+	$data;
 }
 
 sub srequest {
