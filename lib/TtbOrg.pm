@@ -59,7 +59,7 @@ sub request {
 	my $xml = XMLin( $res->content );
 	$self->{debug_data} && $self->debug( "response xml: ", Dumper( $xml ) );
 
-	$xml
+	$xml;
 }
 
 sub srequest {
@@ -69,7 +69,7 @@ sub srequest {
 	$self->request( $path, [
 		sso	=> $self->session,
 		$param ? @$param : (),
-	])
+	]);
 }
 
 sub new_session {
@@ -187,9 +187,9 @@ sub file_upload {
 	my $res = $self->srequest( '/file/upload', [
 		upload_submit	=> 'hrm',
 		file		=> [$file],
-	]);
+	] );
 
-	$self->debug( "saved as workout ". $res->{id} );
+	$self->debug( "saved as workout ". ($res->{id}||'-') );
 	$res->{id};
 }
 
